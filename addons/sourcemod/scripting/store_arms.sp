@@ -63,7 +63,7 @@ public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadc
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int itemid = Store_GetEquippedItem(client, "arms");
 	if(itemid < 0)
-		return Plugin_Handled;
+		return Plugin_Continue;
 	int iIndex = Store_GetDataIndex(itemid);
 	char sModel[PLATFORM_MAX_PATH];
 	g_aArms.GetString(iIndex, sModel, sizeof(sModel));
