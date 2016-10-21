@@ -50,10 +50,6 @@ public bool Arms_Config(Handle &kv, int itemid)
 
 public int Arms_Equip(int client, int itemid)
 {
-	int iIndex = Store_GetDataIndex(itemid);
-	char sModel[PLATFORM_MAX_PATH];
-	g_aArms.GetString(iIndex, sModel, sizeof(sModel));
-	SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
 	return 0;
 }
 
