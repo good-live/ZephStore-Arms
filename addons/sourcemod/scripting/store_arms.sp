@@ -29,7 +29,7 @@ public void OnPluginStart()
 public void Arms_OnMapStart()
 {
 	char sModel[PLATFORM_MAX_PATH];
-	for (int i = 0; i <= g_aArms.Length; i++){
+	for (int i = 0; i < g_aArms.Length; i++){
 		g_aArms.GetString(i, sModel, sizeof(sModel));
 		PrecacheModel(sModel, true);
 	}
@@ -45,6 +45,7 @@ public bool Arms_Config(Handle &kv, int itemid)
 	char sModel[PLATFORM_MAX_PATH];
 	KvGetString(kv, "model", sModel, sizeof(sModel));
 	Store_SetDataIndex(itemid, g_aArms.PushString(sModel));
+	PrintToServer("Added: %s", sModel);
 	return true;
 }
 
@@ -62,6 +63,7 @@ public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadc
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int itemid = Store_GetEquippedItem(client, "arms");
+	PrintToChatAll("Itemid:%i", itemid);
 	if(itemid < 0)
 		return Plugin_Continue;
 	int iIndex = Store_GetDataIndex(itemid);
