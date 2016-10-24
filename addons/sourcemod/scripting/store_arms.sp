@@ -45,7 +45,6 @@ public bool Arms_Config(Handle &kv, int itemid)
 	char sModel[PLATFORM_MAX_PATH];
 	KvGetString(kv, "model", sModel, sizeof(sModel));
 	Store_SetDataIndex(itemid, g_aArms.PushString(sModel));
-	PrintToServer("Added: %s", sModel);
 	return true;
 }
 
