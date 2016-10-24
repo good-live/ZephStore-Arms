@@ -63,7 +63,6 @@ public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadc
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int itemid = Store_GetEquippedItem(client, "arms");
-	PrintToChatAll("Itemid:%i", itemid);
 	if(itemid < 0)
 		return Plugin_Continue;
 	int iIndex = Store_GetDataIndex(itemid);
