@@ -65,7 +65,7 @@ public int Arms_Remove(int client, int itemid)
 public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	int itemid = Store_GetEquippedItem(client, "arms", GetClientTeam(client)+1);
+	int itemid = Store_GetEquippedItem(client, "arms", GetClientTeam(client)-1);
 	if(itemid < 0)
 	{
 		itemid = Store_GetEquippedItem(client, "arms", 0);
