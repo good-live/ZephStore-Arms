@@ -1,6 +1,6 @@
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.2"
 
 #include <sourcemod>
 #include <sdktools>
