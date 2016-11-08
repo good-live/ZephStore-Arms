@@ -54,6 +54,17 @@ public bool Arms_Config(Handle &kv, int itemid)
 
 public int Arms_Equip(int client, int itemid)
 {
+	int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	
+	if (iWeapon != -1)
+	{
+		int iIndex = Store_GetDataIndex(itemid);
+		char sModel[PLATFORM_MAX_PATH];
+		g_aArms.GetString(iIndex, sModel, sizeof(sModel));
+		RemovePlayerItem(client, iWeapon);
+		SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
+		EquipPlayerWeapon(client, iWeapon);
+	}
 	return g_aTeams.Get(Store_GetDataIndex(itemid));
 }
 
