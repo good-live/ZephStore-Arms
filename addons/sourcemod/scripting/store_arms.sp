@@ -59,7 +59,7 @@ public int Arms_Equip(int client, int itemid)
 	if(g_aTeams.Get(iIndex)+1 == GetClientTeam(client))
 	{
 		if(iIndex < 0 || iIndex >= g_aArms.Length)
-			 g_aTeams.Get(iIndex);
+			return g_aTeams.Get(iIndex);
 		char sModel[PLATFORM_MAX_PATH];
 		g_aArms.GetString(iIndex, sModel, sizeof(sModel));
 		DataPack pack = new DataPack();
@@ -125,7 +125,7 @@ public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadc
 	}
 	int iIndex = Store_GetDataIndex(itemid);
 	if(iIndex < 0 || iIndex >= g_aArms.Length)
-			 g_aTeams.Get(iIndex);
+		return Plugin_Continue;
 	char sModel[PLATFORM_MAX_PATH];
 	g_aArms.GetString(iIndex, sModel, sizeof(sModel));
 	SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
