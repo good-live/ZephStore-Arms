@@ -1,6 +1,6 @@
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.2.0"
 
 #include <sourcemod>
 #include <sdktools>
@@ -54,18 +54,56 @@ public bool Arms_Config(Handle &kv, int itemid)
 
 public int Arms_Equip(int client, int itemid)
 {
-	int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 	
-	if (iWeapon != -1)
+	int iIndex = Store_GetDataIndex(itemid);
+	if(g_aTeams.Get(iIndex)+1 == GetClientTeam(client))
 	{
-		int iIndex = Store_GetDataIndex(itemid);
 		char sModel[PLATFORM_MAX_PATH];
 		g_aArms.GetString(iIndex, sModel, sizeof(sModel));
-		RemovePlayerItem(client, iWeapon);
+		DataPack pack = new DataPack();
+		pack.WriteCell(GetClientUserId(client));
+		pack.WriteString(sModel);
 		SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
+		CreateTimer(0.15, RemovePlayerWeapon, pack);
+	}
+	return g_aTeams.Get(iIndex);
+}
+
+public Action RemovePlayerWeapon(Handle timer, DataPack datapack)
+{
+	char sModel[PLATFORM_MAX_PATH];
+	
+	datapack.Reset();
+	int client = GetClientOfUserId(datapack.ReadCell());
+	
+	datapack.ReadString(sModel, sizeof(sModel));
+	
+	if(0 < client <= MaxClients && IsClientConnected(client) && IsPlayerAlive(client))
+	{
+		int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	
+		if (iWeapon != -1)
+		{
+			RemovePlayerItem(client, iWeapon);
+			DataPack pack = new DataPack();
+			pack.WriteCell(iWeapon);
+			pack.WriteCell(GetClientUserId(client));
+			CreateTimer(0.15, GivePlayerWeapon, pack);
+		}
+	}
+	return Plugin_Stop;
+}
+
+public Action GivePlayerWeapon(Handle timer, DataPack pack)
+{
+	pack.Reset();
+	int iWeapon = pack.ReadCell();
+	int client = GetClientOfUserId(pack.ReadCell());
+	if(0 < client <= MAXPLAYERS && IsClientConnected(client) && IsPlayerAlive(client))
+	{
 		EquipPlayerWeapon(client, iWeapon);
 	}
-	return g_aTeams.Get(Store_GetDataIndex(itemid));
+	return Plugin_Stop;
 }
 
 public int Arms_Remove(int client, int itemid)
