@@ -20,10 +20,16 @@ public Plugin myinfo =
 ArrayList g_aArms;
 ArrayList g_aTeams;
 
+ConVar g_cInstant;
+
 public void OnPluginStart()
 {
 	g_aArms = new ArrayList(PLATFORM_MAX_PATH);
 	g_aTeams = new ArrayList();
+	
+	g_cInstant = CreateConVar("sm_store_arms_instant", "0", "Defines whether the arms shoud be changed instantly or on next spawn.");
+	AutoExecConfig();
+	
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	Store_RegisterHandler("arms", "arms", Arms_OnMapStart, Arms_Reset, Arms_Config, Arms_Equip, Arms_Remove, true);
 }
@@ -56,10 +62,9 @@ public int Arms_Equip(int client, int itemid)
 {
 	
 	int iIndex = Store_GetDataIndex(itemid);
-	if(g_aTeams.Get(iIndex)+1 == GetClientTeam(client))
+	int iTeam = g_aTeams.Get(iIndex);
+	if(g_cInstant.BoolValue && (!iTeam || iTeam == GetClientTeam(client)))
 	{
-		if(iIndex < 0 || iIndex >= g_aArms.Length)
-			return g_aTeams.Get(iIndex);
 		char sModel[PLATFORM_MAX_PATH];
 		g_aArms.GetString(iIndex, sModel, sizeof(sModel));
 		DataPack pack = new DataPack();
@@ -68,7 +73,7 @@ public int Arms_Equip(int client, int itemid)
 		SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
 		CreateTimer(0.15, RemovePlayerWeapon, pack);
 	}
-	return g_aTeams.Get(iIndex);
+	return iTeam;
 }
 
 public Action RemovePlayerWeapon(Handle timer, DataPack datapack)
@@ -116,7 +121,7 @@ public int Arms_Remove(int client, int itemid)
 public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	int itemid = Store_GetEquippedItem(client, "arms", GetClientTeam(client)-1);
+	int itemid = Store_GetEquippedItem(client, "arms", GetClientTeam(client));
 	if(itemid < 0)
 	{
 		itemid = Store_GetEquippedItem(client, "arms", 0);

@@ -9,7 +9,7 @@
 ##Configuration Parameters
 * "model" --> The path to the mdl file of the arm Model.
 * "type" --> Must be "arms"
-* "team" --> The ingame team. (2 = CT, 1 = T, 0 = both)
+* "team" --> The ingame team. (3 = CT, 2 = T, 0 = both)
 
 ##Exampel Config (items.txt)
 ```
