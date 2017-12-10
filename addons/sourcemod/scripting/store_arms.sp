@@ -4,6 +4,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <cstrike>
 #include <store>
 
 #pragma newdecls required
@@ -21,6 +22,8 @@ ArrayList g_aArms;
 ArrayList g_aTeams;
 
 ConVar g_cInstant;
+ConVar g_cDefaultT;
+ConVar g_cDefaultCT;
 
 public void OnPluginStart()
 {
@@ -28,6 +31,8 @@ public void OnPluginStart()
 	g_aTeams = new ArrayList();
 	
 	g_cInstant = CreateConVar("sm_store_arms_instant", "0", "Defines whether the arms shoud be changed instantly or on next spawn.");
+	g_cDefaultT = CreateConVar("sm_store_arms_default_t", "", "Path of the default T arms.");
+	g_cDefaultCT = CreateConVar("sm_store_arms_default_ct", "", "Path of the default CT arms.");
 	AutoExecConfig();
 	
 	HookEvent("player_spawn", Event_PlayerSpawn);
@@ -41,6 +46,14 @@ public void Arms_OnMapStart()
 		g_aArms.GetString(i, sModel, sizeof(sModel));
 		PrecacheModel(sModel, true);
 	}
+
+	g_cDefaultT.GetString(sModel, sizeof(sModel));
+	if (strlen(sModel) != 0)
+		PrecacheModel(sModel, true);
+
+	g_cDefaultCT.GetString(sModel, sizeof(sModel));
+	if (strlen(sModel) != 0)
+		PrecacheModel(sModel, true);
 }
 
 public void Arms_Reset()
@@ -60,7 +73,6 @@ public bool Arms_Config(Handle &kv, int itemid)
 
 public int Arms_Equip(int client, int itemid)
 {
-	
 	int iIndex = Store_GetDataIndex(itemid);
 	int iTeam = g_aTeams.Get(iIndex);
 	if(g_cInstant.BoolValue && (!iTeam || iTeam == GetClientTeam(client)))
@@ -115,24 +127,76 @@ public Action GivePlayerWeapon(Handle timer, DataPack pack)
 
 public int Arms_Remove(int client, int itemid)
 {
-	return g_aTeams.Get(Store_GetDataIndex(itemid));
+	int iIndex = Store_GetDataIndex(itemid);
+	int iTeam = g_aTeams.Get(iIndex);
+	if(g_cInstant.BoolValue && (!iTeam || iTeam == GetClientTeam(client)))
+	{
+		char sModel[PLATFORM_MAX_PATH];
+		if (!GetClientDefaultArms(client, sModel, sizeof(sModel)))
+			return iTeam;
+		
+		DataPack pack = new DataPack();
+		pack.WriteCell(GetClientUserId(client));
+		pack.WriteString(sModel);
+		SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
+		CreateTimer(0.15, RemovePlayerWeapon, pack);
+	}
+	return iTeam;
 }
 
 public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
+	char sModel[PLATFORM_MAX_PATH];
+
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	int itemid = Store_GetEquippedItem(client, "arms", GetClientTeam(client));
+	int itemid = Store_GetEquippedItem(client, "arms", 0);
+	if(itemid < 0)
+		itemid = Store_GetEquippedItem(client, "arms", GetClientTeam(client));
+	
 	if(itemid < 0)
 	{
-		itemid = Store_GetEquippedItem(client, "arms", 0);
-		if(itemid < 0)
-		 	return Plugin_Continue;
+		if (!GetClientDefaultArms(client, sModel, sizeof(sModel)))
+			return Plugin_Continue;
 	}
-	int iIndex = Store_GetDataIndex(itemid);
-	if(iIndex < 0 || iIndex >= g_aArms.Length)
-		return Plugin_Continue;
-	char sModel[PLATFORM_MAX_PATH];
-	g_aArms.GetString(iIndex, sModel, sizeof(sModel));
+	else
+	{
+		int iIndex = Store_GetDataIndex(itemid);
+		if(iIndex < 0 || iIndex >= g_aArms.Length)
+			return Plugin_Continue;
+
+		g_aArms.GetString(iIndex, sModel, sizeof(sModel));
+	}
 	SetEntPropString(client, Prop_Send, "m_szArmsModel", sModel);
+	
 	return Plugin_Continue;
+}
+
+bool GetClientDefaultArms(int client, char[] buffer, int maxlen)
+{
+	if (!IsClientInGame(client))
+		return false;
+
+	int clientTeam = GetClientTeam(client);
+
+	char sTempModel[PLATFORM_MAX_PATH];
+	if (clientTeam == CS_TEAM_T)
+	{
+		g_cDefaultT.GetString(sTempModel, sizeof(sTempModel));
+		if (strlen(sTempModel) != 0)
+		{
+			strcopy(buffer, maxlen, sTempModel);
+			return true;
+		}
+	}
+	else if (clientTeam == CS_TEAM_CT)
+	{
+		g_cDefaultCT.GetString(sTempModel, sizeof(sTempModel));
+		if (strlen(sTempModel) != 0)
+		{
+			strcopy(buffer, maxlen, sTempModel);
+			return true;
+		}
+	}
+
+	return false;
 }
