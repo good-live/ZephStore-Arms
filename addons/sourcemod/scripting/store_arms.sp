@@ -36,7 +36,7 @@ public void OnPluginStart()
 	AutoExecConfig();
 	
 	HookEvent("player_spawn", Event_PlayerSpawn);
-	Store_RegisterHandler("arms", "arms", Arms_OnMapStart, Arms_Reset, Arms_Config, Arms_Equip, Arms_Remove, true);
+	Store_RegisterHandler("arms", "model", Arms_OnMapStart, Arms_Reset, Arms_Config, Arms_Equip, Arms_Remove, true);
 }
 
 public void Arms_OnMapStart()
