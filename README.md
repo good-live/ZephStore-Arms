@@ -5,6 +5,7 @@
 * Upload the plugin.
 * Add a "arms" entry to the store translation.
 * Add a config entry to the items.txt of the store.
+* After the first plugin load a config will be generated under /cfg/sourcemod/plguin.store_arms.cfg (Should be self explanatory)
 
 ##Configuration Parameters
 * "model" --> The path to the mdl file of the arm Model.
